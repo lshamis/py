@@ -1,8 +1,8 @@
 from distutils.core import setup, Extension
 
 module = Extension('alephzero',
-                   include_dirs = ['/usr/local/include'],
-                   library_dirs = ['/usr/local/lib'],
+                   include_dirs = ['/usr/include'],
+                   library_dirs = ['/usr/lib'],
                    libraries = ['alephzero'],
                    sources = ['alephzero.cc'])
 
