@@ -6,7 +6,7 @@
 
 struct PacketWrapper {
   a0_packet_t pkt;
-  bool owned;
+  bool owned{true};
 
   std::vector<uint8_t> mem;
   std::vector<std::pair<std::string, std::string>> hdrs_cache;

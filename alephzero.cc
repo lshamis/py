@@ -43,4 +43,10 @@ PYBIND11_MODULE(alephzero, m) {
     .value("SEQUENTIAL", A0_READ_NEXT_SEQUENTIAL)
     .value("RECENT", A0_READ_NEXT_RECENT)
     .export_values();
+
+  py::class_<SubscriberSyncWrapper>(m, "SubscriberSync")
+      .def(py::init(&SubscriberSyncWrapper::init_unmanaged))
+      .def("close", &SubscriberSyncWrapper::close)
+      .def("has_next", &SubscriberSyncWrapper::has_next)
+      .def("next", &SubscriberSyncWrapper::next);
 }
