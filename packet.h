@@ -5,11 +5,44 @@
 #include "common.h"
 
 struct PacketWrapper {
-  const std::vector<uint8_t> mem;
+  a0_packet_t pkt;
+  bool owned;
+
+  std::vector<uint8_t> mem;
   std::vector<std::pair<std::string, std::string>> hdrs_cache;
 
-  a0_packet_t as_pkt() {
-    return a0_buf_t{.ptr = (uint8_t*)mem.data(), .size = mem.size()};
+  ////////////////
+  // Rule of 5. //
+  ////////////////
+
+  // default constructor
+  PacketWrapper() = default;
+
+  // copy constructor
+  PacketWrapper(const PacketWrapper& other) : pkt(other.pkt), owned(other.owned) {
+    if (owned) {
+      mem = other.mem;
+      pkt = a0_buf_t{.ptr = (uint8_t*)mem.data(), .size = mem.size()};
+    }
+  }
+
+  // move constructor
+  PacketWrapper(PacketWrapper&& other) noexcept {
+    *this = std::move(other);
+  }
+
+  // copy assignment
+  PacketWrapper& operator=(const PacketWrapper& other) {
+    return *this = PacketWrapper(other);
+  }
+
+  // move assignment
+  PacketWrapper& operator=(PacketWrapper&& other) noexcept {
+    std::swap(pkt, other.pkt);
+    std::swap(owned, other.owned);
+    std::swap(mem, other.mem);
+    std::swap(hdrs_cache, other.hdrs_cache);
+    return *this;
   }
 
   static PacketWrapper build(const std::vector<std::pair<std::string, std::string>>& hdrs,
@@ -30,23 +63,24 @@ struct PacketWrapper {
             },
     };
 
-    a0_packet_t unused;
+    PacketWrapper wrap;
     check(a0_packet_build(norm_hdrs.size(),
                           norm_hdrs.data(),
                           a0_buf_t{.ptr = (uint8_t*)payload.data(), .size = payload.size()},
                           alloc,
-                          &unused));
+                          &wrap.pkt));
+    wrap.mem = std::move(mem);
 
-    return PacketWrapper{std::move(mem)};
+    return wrap;
   }
 
   std::vector<std::pair<std::string, std::string>> headers() {
     if (hdrs_cache.empty()) {
       size_t num_hdrs;
-      check(a0_packet_num_headers(as_pkt(), &num_hdrs));
+      check(a0_packet_num_headers(pkt, &num_hdrs));
       for (size_t i = 0; i < num_hdrs; i++) {
         a0_packet_header_t pkt_hdr;
-        check(a0_packet_header(as_pkt(), i, &pkt_hdr));
+        check(a0_packet_header(pkt, i, &pkt_hdr));
         hdrs_cache.push_back({pkt_hdr.key, pkt_hdr.val});
       }
     }
@@ -55,13 +89,13 @@ struct PacketWrapper {
 
   std::string payload() {
     a0_buf_t buf;
-    check(a0_packet_payload(as_pkt(), &buf));
+    check(a0_packet_payload(pkt, &buf));
     return std::string((char*)buf.ptr, buf.size);
   }
 
   std::string id() {
     const char* id_;
-    check(a0_packet_id(as_pkt(), &id_));
+    check(a0_packet_id(pkt, &id_));
     return id_;
   }
 };

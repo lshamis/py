@@ -5,6 +5,7 @@
 
 #include "packet.h"
 #include "shmobj.h"
+#include "pubsub.h"
 
 namespace py = pybind11;
 
@@ -22,10 +23,15 @@ PYBIND11_MODULE(alephzero, m) {
       .def_static("unlink", &ShmObjWrapper::unlink);
 
   py::class_<PacketWrapper>(m, "Packet")
-      .def_static("build", &PacketWrapper::build)
+      .def(py::init(&PacketWrapper::build))
       .def_property_readonly("headers", &PacketWrapper::headers)
       .def_property_readonly("payload", &PacketWrapper::payload)
       .def_property_readonly("id", &PacketWrapper::id);
+
+  py::class_<a0_publisher_t>(m, "Publisher")
+      .def(py::init(&PublisherWrapper::init_unmanaged))
+      .def("close", &PublisherWrapper::close)
+      .def("pub", &PublisherWrapper::pub);
 
   py::enum_<a0_subscriber_read_start_t>(m, "SubscriberReadStart")
     .value("EARLIEST", A0_READ_START_EARLIEST)
