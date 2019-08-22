@@ -1,6 +1,6 @@
 FROM alpine:3.10
 
-RUN apk add g++ git linux-headers make py3-pip python3-dev
+RUN apk add g++ git linux-headers make py3-pip python3-dev ipython
 
 RUN cd / &&                                                 \
     git clone https://github.com/alephzero/alephzero.git && \

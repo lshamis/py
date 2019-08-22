@@ -4,10 +4,23 @@
 #include <pybind11/stl.h>
 
 #include "packet.h"
+#include "shmobj.h"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(alephzero, m) {
+  py::class_<a0_shmobj_t> pyshmobj(m, "ShmObj");
+
+  py::class_<a0_shmobj_options_t>(pyshmobj, "Options")
+      .def(py::init<>())
+      .def(py::init([](off_t size) { return a0_shmobj_options_t{size}; }), py::arg("size"))
+      .def_readwrite("size", &a0_shmobj_options_t::size);
+
+  pyshmobj
+      .def(py::init(&ShmObjWrapper::open))
+      .def("close", &ShmObjWrapper::close)
+      .def_static("unlink", &ShmObjWrapper::unlink);
+
   py::class_<PacketWrapper>(m, "Packet")
       .def_static("build", &PacketWrapper::build)
       .def_property_readonly("headers", &PacketWrapper::headers)
