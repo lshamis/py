@@ -74,10 +74,10 @@ PYBIND11_MODULE(alephzero, m) {
   py::class_<a0_topic_manager_t>(m, "TopicManager")
       .def(py::init(&TopicManagerWrapper::init_jsonstr))
       .def("close", &TopicManagerWrapper::close)
-      .def("config_topic", &TopicManagerWrapper::config_topic)
-      .def("publisher_topic", &TopicManagerWrapper::publisher_topic)
-      .def("subscriber_topic", &TopicManagerWrapper::subscriber_topic)
-      .def("rpc_server_topic", &TopicManagerWrapper::rpc_server_topic)
-      .def("rpc_client_topic", &TopicManagerWrapper::rpc_client_topic)
-      .def("unref", &TopicManagerWrapper::unref);
+      .def("open_config_topic", &TopicManagerWrapper::open_config_topic)
+      .def("open_publisher_topic", &TopicManagerWrapper::open_publisher_topic)
+      .def("open_subscriber_topic", &TopicManagerWrapper::open_subscriber_topic)
+      .def("open_rpc_server_topic", &TopicManagerWrapper::open_rpc_server_topic)
+      .def("open_rpc_client_topic", &TopicManagerWrapper::open_rpc_client_topic)
+      .def("close_topic", &TopicManagerWrapper::close_topic);
 }
