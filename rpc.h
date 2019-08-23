@@ -13,9 +13,9 @@ struct RpcServerWrapper {
   std::function<void()> close_cb;
   a0_rpc_server_t server;
 
-  static RpcServerWrapper* init_unmanaged(a0_shmobj_t shmobj,
-                                          std::function<void(PacketWrapper)> onrequest_wrap,
-                                          std::function<void(std::string)> oncancel_wrap) {
+  static RpcServerWrapper* init(a0_shmobj_t shmobj,
+                                std::function<void(PacketWrapper)> onrequest_wrap,
+                                std::function<void(std::string)> oncancel_wrap) {
     auto* wrap = new RpcServerWrapper;
     wrap->onrequest_wrap = std::move(onrequest_wrap);
     wrap->oncancel_wrap = std::move(oncancel_wrap);
@@ -48,7 +48,7 @@ struct RpcServerWrapper {
             },
     };
 
-    check(a0_rpc_server_init_unmanaged(&wrap->server, shmobj, alloc, onrequest, oncancel));
+    check(a0_rpc_server_init(&wrap->server, shmobj, alloc, onrequest, oncancel));
     return wrap;
   }
 
@@ -84,7 +84,7 @@ struct RpcClientWrapper {
   std::function<void()> close_cb;
   a0_rpc_client_t client;
 
-  static RpcClientWrapper* init_unmanaged(a0_shmobj_t shmobj) {
+  static RpcClientWrapper* init(a0_shmobj_t shmobj) {
     auto* wrap = new RpcClientWrapper;
 
     a0_alloc_t alloc = {
@@ -97,7 +97,7 @@ struct RpcClientWrapper {
             },
     };
 
-    check(a0_rpc_client_init_unmanaged(&wrap->client, shmobj, alloc));
+    check(a0_rpc_client_init(&wrap->client, shmobj, alloc));
     return wrap;
   }
 

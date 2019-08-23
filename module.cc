@@ -1,11 +1,11 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "alephzero.h"
 #include "packet.h"
 #include "pubsub.h"
 #include "rpc.h"
 #include "shmobj.h"
+#include "topic_manager.h"
 
 namespace py = pybind11;
 
@@ -32,7 +32,7 @@ PYBIND11_MODULE(alephzero, m) {
       .def_property_readonly("id", &PacketWrapper::id);
 
   py::class_<a0_publisher_t>(m, "Publisher")
-      .def(py::init(&PublisherWrapper::init_unmanaged))
+      .def(py::init(&PublisherWrapper::init))
       .def("close", &PublisherWrapper::close)
       .def("pub", &PublisherWrapper::pub);
 
@@ -48,37 +48,36 @@ PYBIND11_MODULE(alephzero, m) {
       .export_values();
 
   py::class_<SubscriberSyncWrapper>(m, "SubscriberSync")
-      .def(py::init(&SubscriberSyncWrapper::init_unmanaged))
+      .def(py::init(&SubscriberSyncWrapper::init))
       .def("close", &SubscriberSyncWrapper::close)
       .def("has_next", &SubscriberSyncWrapper::has_next)
       .def("next", &SubscriberSyncWrapper::next);
 
   py::class_<SubscriberWrapper>(m, "Subscriber")
-      .def(py::init(&SubscriberWrapper::init_unmanaged))
+      .def(py::init(&SubscriberWrapper::init))
       .def("close", &SubscriberWrapper::close)
       .def("await_close", &SubscriberWrapper::await_close);
 
   py::class_<RpcServerWrapper>(m, "RpcServer")
-      .def(py::init(&RpcServerWrapper::init_unmanaged))
+      .def(py::init(&RpcServerWrapper::init))
       .def("close", &RpcServerWrapper::close)
       .def("await_close", &RpcServerWrapper::await_close)
       .def("reply", &RpcServerWrapper::reply);
 
   py::class_<RpcClientWrapper>(m, "RpcClient")
-      .def(py::init(&RpcClientWrapper::init_unmanaged))
+      .def(py::init(&RpcClientWrapper::init))
       .def("close", &RpcClientWrapper::close)
       .def("await_close", &RpcClientWrapper::await_close)
       .def("send", &RpcClientWrapper::send)
       .def("cancel", &RpcClientWrapper::cancel);
 
-  py::class_<a0_alephzero_t>(m, "AlephZero")
-      .def(py::init(&AlephZeroWrapper::init))
-      .def("close", &AlephZeroWrapper::close)
-      .def("new_config_reader_sync", &AlephZeroWrapper::config_reader_sync)
-      .def("new_config_reader", &AlephZeroWrapper::config_reader)
-      .def("new_publisher", &AlephZeroWrapper::publisher)
-      .def("new_subscriber_sync", &AlephZeroWrapper::subscriber_sync)
-      .def("new_subscriber", &AlephZeroWrapper::subscriber)
-      .def("new_rpc_server", &AlephZeroWrapper::rpc_server)
-      .def("new_rpc_client", &AlephZeroWrapper::rpc_client);
+  py::class_<a0_topic_manager_t>(m, "TopicManager")
+      .def(py::init(&TopicManagerWrapper::init_jsonstr))
+      .def("close", &TopicManagerWrapper::close)
+      .def("config_topic", &TopicManagerWrapper::config_topic)
+      .def("publisher_topic", &TopicManagerWrapper::publisher_topic)
+      .def("subscriber_topic", &TopicManagerWrapper::subscriber_topic)
+      .def("rpc_server_topic", &TopicManagerWrapper::rpc_server_topic)
+      .def("rpc_client_topic", &TopicManagerWrapper::rpc_client_topic)
+      .def("unref", &TopicManagerWrapper::unref);
 }

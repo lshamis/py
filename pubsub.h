@@ -8,9 +8,9 @@
 #include "packet.h"
 
 struct PublisherWrapper {
-  static a0_publisher_t init_unmanaged(a0_shmobj_t shmobj) {
+  static a0_publisher_t init(a0_shmobj_t shmobj) {
     a0_publisher_t pub;
-    check(a0_publisher_init_unmanaged(&pub, shmobj));
+    check(a0_publisher_init(&pub, shmobj));
     return pub;
   }
 
@@ -27,9 +27,9 @@ struct SubscriberSyncWrapper {
   PacketWrapper pkt_wrap;
   a0_subscriber_sync_t sub_sync;
 
-  static SubscriberSyncWrapper* init_unmanaged(a0_shmobj_t shmobj,
-                                               a0_subscriber_init_t sub_init,
-                                               a0_subscriber_iter_t sub_iter) {
+  static SubscriberSyncWrapper* init(a0_shmobj_t shmobj,
+                                     a0_subscriber_init_t sub_init,
+                                     a0_subscriber_iter_t sub_iter) {
     auto* wrap = new SubscriberSyncWrapper;
 
     a0_alloc_t alloc = {
@@ -42,7 +42,7 @@ struct SubscriberSyncWrapper {
             },
     };
 
-    check(a0_subscriber_sync_init_unmanaged(&wrap->sub_sync, shmobj, alloc, sub_init, sub_iter));
+    check(a0_subscriber_sync_init(&wrap->sub_sync, shmobj, alloc, sub_init, sub_iter));
     return wrap;
   }
 
@@ -70,10 +70,10 @@ struct SubscriberWrapper {
   std::function<void()> close_cb;
   a0_subscriber_t sub;
 
-  static SubscriberWrapper* init_unmanaged(a0_shmobj_t shmobj,
-                                           a0_subscriber_init_t sub_init,
-                                           a0_subscriber_iter_t sub_iter,
-                                           std::function<void(PacketWrapper)> callback_wrap) {
+  static SubscriberWrapper* init(a0_shmobj_t shmobj,
+                                 a0_subscriber_init_t sub_init,
+                                 a0_subscriber_iter_t sub_iter,
+                                 std::function<void(PacketWrapper)> callback_wrap) {
     auto* wrap = new SubscriberWrapper;
     wrap->pkt_cb = std::move(callback_wrap);
 
@@ -96,7 +96,7 @@ struct SubscriberWrapper {
             },
     };
 
-    check(a0_subscriber_init_unmanaged(&wrap->sub, shmobj, alloc, sub_init, sub_iter, callback));
+    check(a0_subscriber_init(&wrap->sub, shmobj, alloc, sub_init, sub_iter, callback));
     return wrap;
   }
 
