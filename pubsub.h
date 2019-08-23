@@ -50,15 +50,15 @@ struct SubscriberSyncWrapper {
     delete wrap;
   }
 
-  static bool has_next(SubscriberSyncWrapper* wrap) {
+  bool has_next() {
     bool ret;
-    check(a0_subscriber_sync_has_next(&wrap->sub_sync, &ret));
+    check(a0_subscriber_sync_has_next(&sub_sync, &ret));
     return ret;
   }
 
-  static PacketWrapper next(SubscriberSyncWrapper* wrap) {
+  PacketWrapper next() {
     a0_packet_t pkt;
-    check(a0_subscriber_sync_next(&wrap->sub_sync, &pkt));
+    check(a0_subscriber_sync_next(&sub_sync, &pkt));
     return PacketWrapper::from_packet(pkt);
   }
 };
@@ -99,19 +99,19 @@ struct SubscriberWrapper {
     return wrap;
   }
 
-  static void close(SubscriberWrapper* wrap, std::function<void()> callback_wrap) {
-    wrap->close_cb = std::move(callback_wrap);
+  void close(std::function<void()> callback_wrap) {
+    close_cb = std::move(callback_wrap);
 
     a0_callback_t callback = {
-        .user_data = wrap,
+        .user_data = this,
         .fn =
             [](void* user_data) {
-              auto* wrap = (SubscriberWrapper*)user_data;
-              wrap->close_cb();
-              delete wrap;
+              auto* self = (SubscriberWrapper*)user_data;
+              self->close_cb();
+              delete self;
             },
     };
 
-    check(a0_subscriber_close(&wrap->sub, callback));
+    check(a0_subscriber_close(&sub, callback));
   }
 };
