@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "common.h"
+#include "packet.h"
 
 struct PublisherWrapper {
   static a0_publisher_t init_unmanaged(a0_shmobj_t shmobj) {

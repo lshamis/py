@@ -14,7 +14,7 @@ CXXFLAGS += $(shell $(PYTHON)-config --cflags)
 all:
 	@echo "TODO"
 
-$(LIB_DIR)/$(A0)$(PY_SUFFIX): $(A0).cc
+$(LIB_DIR)/$(A0)$(PY_SUFFIX): module.cc
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -shared $< -o $@
 
