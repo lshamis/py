@@ -55,16 +55,19 @@ PYBIND11_MODULE(alephzero, m) {
 
   py::class_<SubscriberWrapper>(m, "Subscriber")
       .def(py::init(&SubscriberWrapper::init_unmanaged))
-      .def("close", &SubscriberWrapper::close);
+      .def("close", &SubscriberWrapper::close)
+      .def("await_close", &SubscriberWrapper::await_close);
 
   py::class_<RpcServerWrapper>(m, "RpcServer")
       .def(py::init(&RpcServerWrapper::init_unmanaged))
       .def("close", &RpcServerWrapper::close)
+      .def("await_close", &RpcServerWrapper::await_close)
       .def("reply", &RpcServerWrapper::reply);
 
   py::class_<RpcClientWrapper>(m, "RpcClient")
       .def(py::init(&RpcClientWrapper::init_unmanaged))
       .def("close", &RpcClientWrapper::close)
+      .def("await_close", &RpcClientWrapper::await_close)
       .def("send", &RpcClientWrapper::send)
       .def("cancel", &RpcClientWrapper::cancel);
 

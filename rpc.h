@@ -68,6 +68,10 @@ struct RpcServerWrapper {
     check(a0_rpc_server_close(&server, callback));
   }
 
+  void await_close() {
+    check(a0_rpc_server_await_close(&server));
+  }
+
   void reply(const std::string& req_id_wrap, PacketWrapper resp) {
     a0_packet_id_t req_id;
     memcpy(req_id, req_id_wrap.c_str(), A0_PACKET_ID_SIZE);
@@ -111,6 +115,10 @@ struct RpcClientWrapper {
     };
 
     check(a0_rpc_client_close(&client, callback));
+  }
+
+  void await_close() {
+    check(a0_rpc_client_await_close(&client));
   }
 
   void send(PacketWrapper req, std::function<void(PacketWrapper)> callback_wrap) {

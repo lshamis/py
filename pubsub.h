@@ -115,4 +115,8 @@ struct SubscriberWrapper {
 
     check(a0_subscriber_close(&sub, callback));
   }
+
+  void await_close() {
+    check(a0_subscriber_await_close(&sub));
+  }
 };
