@@ -27,8 +27,8 @@ struct SubscriberSyncWrapper {
   a0_subscriber_sync_t sub_sync;
 
   static SubscriberSyncWrapper* init_unmanaged(a0_shmobj_t shmobj,
-                                               a0_subscriber_read_start_t read_start,
-                                               a0_subscriber_read_next_t read_next) {
+                                               a0_subscriber_init_t sub_init,
+                                               a0_subscriber_iter_t sub_iter) {
     auto* wrap = new SubscriberSyncWrapper;
 
     a0_alloc_t alloc = {
@@ -41,7 +41,7 @@ struct SubscriberSyncWrapper {
             },
     };
 
-    check(a0_subscriber_sync_init_unmanaged(&wrap->sub_sync, shmobj, alloc, read_start, read_next));
+    check(a0_subscriber_sync_init_unmanaged(&wrap->sub_sync, shmobj, alloc, sub_init, sub_iter));
     return wrap;
   }
 
@@ -70,8 +70,8 @@ struct SubscriberWrapper {
   a0_subscriber_t sub;
 
   static SubscriberWrapper* init_unmanaged(a0_shmobj_t shmobj,
-                                           a0_subscriber_read_start_t read_start,
-                                           a0_subscriber_read_next_t read_next,
+                                           a0_subscriber_init_t sub_init,
+                                           a0_subscriber_iter_t sub_iter,
                                            std::function<void(PacketWrapper)> callback_wrap) {
     auto* wrap = new SubscriberWrapper;
     wrap->pkt_cb = std::move(callback_wrap);
@@ -95,7 +95,7 @@ struct SubscriberWrapper {
             },
     };
 
-    check(a0_subscriber_init_unmanaged(&wrap->sub, shmobj, alloc, read_start, read_next, callback));
+    check(a0_subscriber_init_unmanaged(&wrap->sub, shmobj, alloc, sub_init, sub_iter, callback));
     return wrap;
   }
 
