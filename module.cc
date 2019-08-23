@@ -37,14 +37,14 @@ PYBIND11_MODULE(alephzero, m) {
       .def("pub", &PublisherWrapper::pub);
 
   py::enum_<a0_subscriber_init_t>(m, "SubscriberInit")
-      .value("OLDEST", A0_INIT_OLDEST)
-      .value("MOST_RECENT", A0_INIT_MOST_RECENT)
-      .value("AWAIT_NEW", A0_INIT_AWAIT_NEW)
+      .value("INIT_OLDEST", A0_INIT_OLDEST)
+      .value("INIT_MOST_RECENT", A0_INIT_MOST_RECENT)
+      .value("INIT_AWAIT_NEW", A0_INIT_AWAIT_NEW)
       .export_values();
 
   py::enum_<a0_subscriber_iter_t>(m, "SubscriberIter")
-      .value("NEXT", A0_ITER_NEXT)
-      .value("NEWEST", A0_ITER_NEWEST)
+      .value("ITER_NEXT", A0_ITER_NEXT)
+      .value("ITER_NEWEST", A0_ITER_NEWEST)
       .export_values();
 
   py::class_<SubscriberSyncWrapper>(m, "SubscriberSync")
