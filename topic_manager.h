@@ -46,8 +46,4 @@ struct TopicManagerWrapper {
     check(a0_topic_manager_open_rpc_client_topic(tm, name, &shm));
     return shm;
   }
-
-  static void close_topic(a0_topic_manager_t* tm, a0_shmobj_t shm) {
-    check(a0_topic_manager_close_topic(tm, shm));
-  }
 };

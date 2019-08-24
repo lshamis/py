@@ -79,6 +79,5 @@ PYBIND11_MODULE(alephzero, m) {
       .def("open_publisher_topic", &TopicManagerWrapper::open_publisher_topic)
       .def("open_subscriber_topic", &TopicManagerWrapper::open_subscriber_topic)
       .def("open_rpc_server_topic", &TopicManagerWrapper::open_rpc_server_topic)
-      .def("open_rpc_client_topic", &TopicManagerWrapper::open_rpc_client_topic)
-      .def("close_topic", &TopicManagerWrapper::close_topic);
+      .def("open_rpc_client_topic", &TopicManagerWrapper::open_rpc_client_topic);
 }
