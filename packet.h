@@ -71,6 +71,6 @@ struct PacketWrapper {
   std::string id() {
     a0_packet_id_t id_;
     check(a0_packet_id(pkt(), &id_));
-    return std::string(id_, A0_PACKET_ID_SIZE);
+    return std::string(id_);
   }
 };

@@ -44,7 +44,7 @@ struct RpcServerWrapper {
         .fn =
             [](void* user_data, a0_packet_id_t id) {
               auto* wrap = (RpcServerWrapper*)user_data;
-              wrap->oncancel_wrap(std::string(id, A0_PACKET_ID_SIZE));
+              wrap->oncancel_wrap(id);
             },
     };
 
