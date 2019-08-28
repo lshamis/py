@@ -4,7 +4,8 @@ module = Extension('alephzero',
                    include_dirs = ['/usr/include'],
                    library_dirs = ['/usr/lib'],
                    libraries = ['alephzero'],
-                   sources = ['module.cc'])
+                   sources = ['module.cc'],
+                   extra_compile_args = ['-D_GLIBCXX_USE_CXX11_ABI=0'])
 
 setup (name = 'AlephZero',
        version = '0.1',
