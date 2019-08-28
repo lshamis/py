@@ -52,7 +52,7 @@ struct RpcServerWrapper {
     return wrap;
   }
 
-  void close(std::function<void()> onclose) {
+  void async_close(std::function<void()> onclose) {
     close_cb = std::move(onclose);
 
     a0_callback_t callback = {
@@ -65,11 +65,11 @@ struct RpcServerWrapper {
             },
     };
 
-    check(a0_rpc_server_close(&server, callback));
+    check(a0_rpc_server_async_close(&server, callback));
   }
 
-  void await_close() {
-    check(a0_rpc_server_await_close(&server));
+  void close() {
+    check(a0_rpc_server_close(&server));
   }
 
   void reply(const std::string& req_id_wrap, PacketWrapper resp) {
@@ -101,7 +101,7 @@ struct RpcClientWrapper {
     return wrap;
   }
 
-  void close(std::function<void()> onclose) {
+  void async_close(std::function<void()> onclose) {
     close_cb = std::move(onclose);
 
     a0_callback_t callback = {
@@ -114,11 +114,11 @@ struct RpcClientWrapper {
             },
     };
 
-    check(a0_rpc_client_close(&client, callback));
+    check(a0_rpc_client_async_close(&client, callback));
   }
 
-  void await_close() {
-    check(a0_rpc_client_await_close(&client));
+  void close() {
+    check(a0_rpc_client_close(&client));
   }
 
   void send(PacketWrapper req, std::function<void(PacketWrapper)> callback_wrap) {

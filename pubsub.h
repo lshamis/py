@@ -100,7 +100,7 @@ struct SubscriberWrapper {
     return wrap;
   }
 
-  void close(std::function<void()> callback_wrap) {
+  void async_close(std::function<void()> callback_wrap) {
     close_cb = std::move(callback_wrap);
 
     a0_callback_t callback = {
@@ -113,10 +113,10 @@ struct SubscriberWrapper {
             },
     };
 
-    check(a0_subscriber_close(&sub, callback));
+    check(a0_subscriber_async_close(&sub, callback));
   }
 
-  void await_close() {
-    check(a0_subscriber_await_close(&sub));
+  void close() {
+    check(a0_subscriber_close(&sub));
   }
 };
