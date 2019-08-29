@@ -61,8 +61,7 @@ PYBIND11_MODULE(alephzero, m) {
   py::class_<a0::RpcServer> pyrpcserver(m, "RpcServer");
 
   py::class_<a0::RpcRequest>(m, "RpcRequest")
-      .def("server", &a0::RpcRequest::server)
-      .def("pkt", &a0::RpcRequest::pkt)
+      .def_property_readonly("pkt", &a0::RpcRequest::pkt)
       .def("reply", &a0::RpcRequest::reply);
 
   pyrpcserver
