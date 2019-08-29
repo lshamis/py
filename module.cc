@@ -58,10 +58,16 @@ PYBIND11_MODULE(alephzero, m) {
       .def(py::init<a0::ShmObj, a0_subscriber_init_t, a0_subscriber_iter_t, std::function<void(a0::Packet)>>())
       .def("async_close", &a0::Subscriber::async_close);
 
-  py::class_<a0::RpcServer>(m, "RpcServer")
-      .def(py::init<a0::ShmObj, std::function<void(a0::Packet)>, std::function<void(std::string)>>())
-      .def("async_close", &a0::RpcServer::async_close)
-      .def("reply", &a0::RpcServer::reply);
+  py::class_<a0::RpcServer> pyrpcserver(m, "RpcServer");
+
+  py::class_<a0::RpcRequest>(m, "RpcRequest")
+      .def("server", &a0::RpcRequest::server)
+      .def("pkt", &a0::RpcRequest::pkt)
+      .def("reply", &a0::RpcRequest::reply);
+
+  pyrpcserver
+      .def(py::init<a0::ShmObj, std::function<void(a0::RpcRequest)>, std::function<void(std::string)>>())
+      .def("async_close", &a0::RpcServer::async_close);
 
   py::class_<a0::RpcClient>(m, "RpcClient")
       .def(py::init<a0::ShmObj>())
