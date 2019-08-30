@@ -24,7 +24,7 @@ PYBIND11_MODULE(alephzero, m) {
 
   py::class_<a0::PacketView>(m, "PacketView")
       .def_property_readonly("headers",
-                             [](a0::Packet* pkt) {
+                             [](a0::PacketView* pkt) {
                                std::vector<std::pair<std::string_view, std::string_view>> hdrs;
                                size_t num_hdrs = pkt->num_headers();
                                for (size_t i = 0; i < num_hdrs; i++) {
