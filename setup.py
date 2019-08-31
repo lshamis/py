@@ -1,6 +1,6 @@
 from distutils.core import setup, Extension
 
-module = Extension('alephzero',
+module = Extension('a0',
                    include_dirs = ['/usr/include'],
                    library_dirs = ['/usr/lib'],
                    libraries = ['alephzero'],
@@ -15,4 +15,3 @@ setup (name = 'AlephZero',
        url = 'https://github.com/alephzero/py',
        long_description = '''TODO: long description''',
        ext_modules = [module])
-

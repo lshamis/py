@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(alephzero, m) {
+PYBIND11_MODULE(a0, m) {
   py::class_<a0::ShmObj> pyshmobj(m, "ShmObj");
 
   py::class_<a0::ShmObj::Options>(pyshmobj, "Options")
