@@ -6,20 +6,20 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(a0, m) {
-  py::class_<a0::ShmObj> pyshmobj(m, "ShmObj");
+  py::class_<a0::Shm> pyshmobj(m, "Shm");
 
-  py::class_<a0::ShmObj::Options>(pyshmobj, "Options")
+  py::class_<a0::Shm::Options>(pyshmobj, "Options")
       .def(py::init<>())
       .def(py::init([](off_t size) {
-             return a0::ShmObj::Options{size};
+             return a0::Shm::Options{size};
            }),
            py::arg("size"))
-      .def_readwrite("size", &a0::ShmObj::Options::size);
+      .def_readwrite("size", &a0::Shm::Options::size);
 
   pyshmobj
       .def(py::init<const std::string&>())
-      .def(py::init<const std::string&, const a0::ShmObj::Options&>())
-      .def_static("unlink", &a0::ShmObj::unlink);
+      .def(py::init<const std::string&, const a0::Shm::Options&>())
+      .def_static("unlink", &a0::Shm::unlink);
 
   py::class_<a0::PacketView>(m, "PacketView")
       .def_property_readonly("headers",
@@ -53,7 +53,7 @@ PYBIND11_MODULE(a0, m) {
       .def_property_readonly("id", &a0::Packet::id);
 
   py::class_<a0::Publisher>(m, "Publisher")
-      .def(py::init<a0::ShmObj>())
+      .def(py::init<a0::Shm>())
       .def("pub", py::overload_cast<const a0::Packet&>(&a0::Publisher::pub))
       .def("pub", py::overload_cast<std::string_view>(&a0::Publisher::pub));
 
@@ -69,12 +69,12 @@ PYBIND11_MODULE(a0, m) {
       .export_values();
 
   py::class_<a0::SubscriberSync>(m, "SubscriberSync")
-      .def(py::init<a0::ShmObj, a0_subscriber_init_t, a0_subscriber_iter_t>())
+      .def(py::init<a0::Shm, a0_subscriber_init_t, a0_subscriber_iter_t>())
       .def("has_next", &a0::SubscriberSync::has_next)
       .def("next", &a0::SubscriberSync::next);
 
   py::class_<a0::Subscriber>(m, "Subscriber")
-      .def(py::init<a0::ShmObj,
+      .def(py::init<a0::Shm,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
                     std::function<void(a0::Packet)>>())
@@ -88,13 +88,13 @@ PYBIND11_MODULE(a0, m) {
       .def("reply", py::overload_cast<std::string_view>(&a0::RpcRequest::reply));
 
   pyrpcserver
-      .def(py::init<a0::ShmObj,
+      .def(py::init<a0::Shm,
                     std::function<void(a0::RpcRequest)>,
                     std::function<void(std::string)>>())
       .def("async_close", &a0::RpcServer::async_close);
 
   py::class_<a0::RpcClient>(m, "RpcClient")
-      .def(py::init<a0::ShmObj>())
+      .def(py::init<a0::Shm>())
       .def("async_close", &a0::RpcClient::async_close)
       .def("send",
            py::overload_cast<const a0::Packet&, std::function<void(a0::PacketView)>>(
