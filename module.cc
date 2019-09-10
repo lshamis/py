@@ -52,8 +52,20 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_property_readonly("payload", &a0::Packet::payload)
       .def_property_readonly("id", &a0::Packet::id);
 
+  py::class_<a0::TopicManager>(m, "TopicManager")
+      .def(py::init<const std::string&>())
+      .def("config_topic", &a0::TopicManager::config_topic)
+      .def("publisher_topic", &a0::TopicManager::publisher_topic)
+      .def("subscriber_topic", &a0::TopicManager::subscriber_topic)
+      .def("rpc_server_topic", &a0::TopicManager::rpc_server_topic)
+      .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
+
+  m.def("InitGlobalTopicManager", py::overload_cast<a0::TopicManager>(&a0::InitGlobalTopicManager));
+  m.def("InitGlobalTopicManager", py::overload_cast<const std::string&>(&a0::InitGlobalTopicManager));
+
   py::class_<a0::Publisher>(m, "Publisher")
       .def(py::init<a0::Shm>())
+      .def(py::init<const std::string&>())
       .def("pub", py::overload_cast<const a0::Packet&>(&a0::Publisher::pub))
       .def("pub", py::overload_cast<std::string_view>(&a0::Publisher::pub));
 
@@ -70,11 +82,16 @@ PYBIND11_MODULE(alephzero_bindings, m) {
 
   py::class_<a0::SubscriberSync>(m, "SubscriberSync")
       .def(py::init<a0::Shm, a0_subscriber_init_t, a0_subscriber_iter_t>())
+      .def(py::init<const std::string&, a0_subscriber_init_t, a0_subscriber_iter_t>())
       .def("has_next", &a0::SubscriberSync::has_next)
       .def("next", &a0::SubscriberSync::next);
 
   py::class_<a0::Subscriber>(m, "Subscriber")
       .def(py::init<a0::Shm,
+                    a0_subscriber_init_t,
+                    a0_subscriber_iter_t,
+                    std::function<void(a0::PacketView)>>())
+      .def(py::init<const std::string&,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
                     std::function<void(a0::PacketView)>>())
@@ -91,10 +108,14 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def(py::init<a0::Shm,
                     std::function<void(a0::RpcRequest)>,
                     std::function<void(std::string)>>())
+      .def(py::init<const std::string&,
+                    std::function<void(a0::RpcRequest)>,
+                    std::function<void(std::string)>>())
       .def("async_close", &a0::RpcServer::async_close);
 
   py::class_<a0::RpcClient>(m, "RpcClient")
       .def(py::init<a0::Shm>())
+      .def(py::init<const std::string&>())
       .def("async_close", &a0::RpcClient::async_close)
       .def("send",
            py::overload_cast<const a0::Packet&, std::function<void(a0::PacketView)>>(
@@ -103,12 +124,4 @@ PYBIND11_MODULE(alephzero_bindings, m) {
            py::overload_cast<std::string_view, std::function<void(a0::PacketView)>>(
                &a0::RpcClient::send))
       .def("cancel", &a0::RpcClient::cancel);
-
-  py::class_<a0::TopicManager>(m, "TopicManager")
-      .def(py::init<const std::string&>())
-      .def("config_topic", &a0::TopicManager::config_topic)
-      .def("publisher_topic", &a0::TopicManager::publisher_topic)
-      .def("subscriber_topic", &a0::TopicManager::subscriber_topic)
-      .def("rpc_server_topic", &a0::TopicManager::rpc_server_topic)
-      .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
 }
