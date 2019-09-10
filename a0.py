@@ -10,15 +10,14 @@ class aio_sub:
         ns.loop = loop or asyncio.get_event_loop()
         ns.q = asyncio.Queue(1)
         ns.cv = threading.Condition()
-        ns.closing = False
 
         # Note: To prevent cyclic dependencies, `callback` is NOT owned by
         # self.
         def callback(pkt):
+            ns.cv.acquire()
             ns.loop.call_soon_threadsafe(
                 lambda: asyncio.ensure_future(
                     ns.q.put(pkt), loop=ns.loop))
-            ns.cv.acquire()
             ns.cv.wait()
             ns.cv.release()
 
