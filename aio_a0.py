@@ -4,7 +4,7 @@ import threading
 import types
 
 
-class Subscribe:
+class sub:
     def __init__(self, shm, init_, iter_, loop=None):
         ns = types.SimpleNamespace()
         ns.loop = loop or asyncio.get_event_loop()
