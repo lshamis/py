@@ -1,10 +1,10 @@
-import a0
+from alephzero_bindings import *
 import asyncio
 import threading
 import types
 
 
-class sub:
+class aio_sub:
     def __init__(self, shm, init_, iter_, loop=None):
         ns = types.SimpleNamespace()
         ns.loop = loop or asyncio.get_event_loop()
@@ -20,7 +20,7 @@ class sub:
             ns.cv.release()
 
         self._ns = ns
-        self._sub = a0.Subscriber(shm, init_, iter_, callback)
+        self._sub = Subscriber(shm, init_, iter_, callback)
 
     def __aiter__(self):
         return self
@@ -31,3 +31,4 @@ class sub:
         self._ns.cv.notify()
         self._ns.cv.release()
         return pkt
+

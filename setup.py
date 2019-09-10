@@ -1,13 +1,13 @@
 from distutils.core import setup, Extension
 
-module = Extension('a0',
+module = Extension('alephzero_bindings',
                    include_dirs = ['/usr/include'],
                    library_dirs = ['/usr/lib'],
                    libraries = ['alephzero'],
                    sources = ['module.cc'],
                    extra_compile_args = ['-std=c++17', '-D_GLIBCXX_USE_CXX11_ABI=0'])
 
-setup(name = 'AlephZero',
+setup(name = 'alephzero',
       version = '0.1',
       description = 'TODO: description',
       author = 'Leonid Shamis',
@@ -15,4 +15,4 @@ setup(name = 'AlephZero',
       url = 'https://github.com/alephzero/py',
       long_description = '''TODO: long description''',
       ext_modules = [module],
-      py_modules = ['aio_a0'])
+      py_modules = ['a0'])

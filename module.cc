@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(a0, m) {
+PYBIND11_MODULE(alephzero_bindings, m) {
   py::class_<a0::Shm> pyshmobj(m, "Shm");
 
   py::class_<a0::Shm::Options>(pyshmobj, "Options")
@@ -77,7 +77,7 @@ PYBIND11_MODULE(a0, m) {
       .def(py::init<a0::Shm,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
-                    std::function<void(a0::Packet)>>())
+                    std::function<void(a0::PacketView)>>())
       .def("async_close", &a0::Subscriber::async_close);
 
   py::class_<a0::RpcServer> pyrpcserver(m, "RpcServer");
