@@ -42,7 +42,9 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                                }
                                return hdrs;
                              })
-      .def_property_readonly("payload", &a0::PacketView::payload)
+      .def_property_readonly("payload", [](a0::PacketView* self) {
+        return py::bytes(std::string(self->payload()));
+      })
       .def_property_readonly("id", &a0::PacketView::id);
 
   py::class_<a0::Packet>(m, "Packet")
@@ -60,7 +62,9 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                                }
                                return hdrs;
                              })
-      .def_property_readonly("payload", &a0::Packet::payload)
+      .def_property_readonly("payload", [](a0::Packet* self) {
+        return py::bytes(std::string(self->payload()));
+      })
       .def_property_readonly("id", &a0::Packet::id);
 
   py::class_<a0::TopicManager>(m, "TopicManager")
