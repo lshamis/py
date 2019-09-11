@@ -5,6 +5,13 @@
 
 namespace py = pybind11;
 
+struct SubscriberDeleter {
+  void operator()(a0::Subscriber* self) {
+    py::gil_scoped_release release;
+    self->~Subscriber();
+  }
+};
+
 PYBIND11_MODULE(alephzero_bindings, m) {
   py::class_<a0::Shm> pyshmobj(m, "Shm");
 
@@ -86,7 +93,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("has_next", &a0::SubscriberSync::has_next)
       .def("next", &a0::SubscriberSync::next);
 
-  py::class_<a0::Subscriber>(m, "Subscriber")
+  py::class_<a0::Subscriber, std::unique_ptr<a0::Subscriber, SubscriberDeleter>>(m, "Subscriber")
       .def(py::init<a0::Shm,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,

@@ -10,26 +10,38 @@ class aio_sub:
         ns.loop = loop or asyncio.get_event_loop()
         ns.q = asyncio.Queue(1)
         ns.cv = threading.Condition()
+        ns.closing = False
 
         # Note: To prevent cyclic dependencies, `callback` is NOT owned by
         # self.
-        def callback(pkt):
-            ns.cv.acquire()
-            ns.loop.call_soon_threadsafe(
-                lambda: asyncio.ensure_future(
-                    ns.q.put(pkt), loop=ns.loop))
-            ns.cv.wait()
-            ns.cv.release()
+        def callback(pkt_view):
+            pkt = Packet(pkt_view)
+            with ns.cv:
+                if ns.closing:
+                    return
+                def onloop():
+                    asyncio.ensure_future(ns.q.put(pkt))
+                ns.loop.call_soon_threadsafe(onloop)
+                ns.cv.wait()
 
         self._ns = ns
         self._sub = Subscriber(shm, init_, iter_, callback)
+
+    def __del__(self):
+        with self._ns.cv:
+            self._ns.closing = True
+        del self._sub  # Block until callback completes.
 
     def __aiter__(self):
         return self
 
     async def __anext__(self):
         pkt = await self._ns.q.get()
-        self._ns.cv.acquire()
-        self._ns.cv.notify()
-        self._ns.cv.release()
+        with self._ns.cv:
+            self._ns.cv.notify()
+        return pkt
+
+
+async def aio_sub_one(shm, init_, loop=None):
+    async for pkt in aio_sub(shm, init_, ITER_NEXT, loop):
         return pkt
