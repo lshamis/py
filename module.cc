@@ -5,12 +5,16 @@
 
 namespace py = pybind11;
 
-struct SubscriberDeleter {
-  void operator()(a0::Subscriber* self) {
-    py::gil_scoped_release release;
-    self->~Subscriber();
+template <typename T>
+struct NoGilDeleter {
+  void operator()(T* t) {
+    py::gil_scoped_release nogil;
+    delete t;
   }
 };
+
+template <typename T>
+using nogil_holder = std::unique_ptr<T, NoGilDeleter<T>>;
 
 PYBIND11_MODULE(alephzero_bindings, m) {
   py::class_<a0::Shm> pyshmobj(m, "Shm");
@@ -93,7 +97,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("has_next", &a0::SubscriberSync::has_next)
       .def("next", &a0::SubscriberSync::next);
 
-  py::class_<a0::Subscriber, std::unique_ptr<a0::Subscriber, SubscriberDeleter>>(m, "Subscriber")
+  py::class_<a0::Subscriber, nogil_holder<a0::Subscriber>>(m, "Subscriber")
       .def(py::init<a0::Shm,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
@@ -104,7 +108,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                     std::function<void(a0::PacketView)>>())
       .def("async_close", &a0::Subscriber::async_close);
 
-  py::class_<a0::RpcServer> pyrpcserver(m, "RpcServer");
+  py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>> pyrpcserver(m, "RpcServer");
 
   py::class_<a0::RpcRequest>(m, "RpcRequest")
       .def_property_readonly("pkt", &a0::RpcRequest::pkt)
@@ -120,7 +124,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                     std::function<void(std::string)>>())
       .def("async_close", &a0::RpcServer::async_close);
 
-  py::class_<a0::RpcClient>(m, "RpcClient")
+  py::class_<a0::RpcClient, nogil_holder<a0::RpcClient>>(m, "RpcClient")
       .def(py::init<a0::Shm>())
       .def(py::init<const std::string&>())
       .def("async_close", &a0::RpcClient::async_close)
