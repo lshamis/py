@@ -42,9 +42,10 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                                }
                                return hdrs;
                              })
-      .def_property_readonly("payload", [](a0::PacketView* self) {
-        return py::bytes(std::string(self->payload()));
-      })
+      .def_property_readonly("payload",
+                             [](a0::PacketView* self) {
+                               return py::bytes(std::string(self->payload()));
+                             })
       .def_property_readonly("id", &a0::PacketView::id);
 
   py::class_<a0::Packet>(m, "Packet")
@@ -62,9 +63,10 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                                }
                                return hdrs;
                              })
-      .def_property_readonly("payload", [](a0::Packet* self) {
-        return py::bytes(std::string(self->payload()));
-      })
+      .def_property_readonly("payload",
+                             [](a0::Packet* self) {
+                               return py::bytes(std::string(self->payload()));
+                             })
       .def_property_readonly("id", &a0::Packet::id);
 
   py::class_<a0::TopicManager>(m, "TopicManager")
@@ -76,7 +78,8 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
 
   m.def("InitGlobalTopicManager", py::overload_cast<a0::TopicManager>(&a0::InitGlobalTopicManager));
-  m.def("InitGlobalTopicManager", py::overload_cast<const std::string&>(&a0::InitGlobalTopicManager));
+  m.def("InitGlobalTopicManager",
+        py::overload_cast<const std::string&>(&a0::InitGlobalTopicManager));
 
   py::class_<a0::Publisher>(m, "Publisher")
       .def(py::init<a0::Shm>())
@@ -110,7 +113,20 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
                     std::function<void(a0::PacketView)>>())
-      .def("async_close", &a0::Subscriber::async_close);
+      .def("async_close", &a0::Subscriber::async_close)
+      .def_static("read_one",
+                  py::overload_cast<a0::Shm, a0_subscriber_init_t, int>(&a0::Subscriber::read_one),
+                  py::arg("shm"),
+                  py::arg("seek"),
+                  py::arg("flags") = 0)
+      .def_static("read_one",
+                  py::overload_cast<const std::string&, a0_subscriber_init_t, int>(
+                      &a0::Subscriber::read_one),
+                  py::arg("topic"),
+                  py::arg("seek"),
+                  py::arg("flags") = 0);
+
+  m.def("read_config", &a0::read_config, py::arg("seek"), py::arg("flags") = 0);
 
   py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>> pyrpcserver(m, "RpcServer");
 
