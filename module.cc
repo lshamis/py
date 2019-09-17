@@ -126,7 +126,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                   py::arg("seek"),
                   py::arg("flags") = 0);
 
-  m.def("read_config", &a0::read_config, py::arg("seek"), py::arg("flags") = 0);
+  m.def("read_config", &a0::read_config, py::arg("flags") = 0);
 
   py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>> pyrpcserver(m, "RpcServer");
 
