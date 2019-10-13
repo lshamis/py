@@ -45,3 +45,23 @@ class aio_sub:
 async def aio_sub_one(shm, init_, loop=None):
     async for pkt in aio_sub(shm, init_, ITER_NEXT, loop):
         return pkt
+
+
+class aio_rpc_client:
+    def __init__(self, shm, loop=None):
+        self._loop = loop or asyncio.get_event_loop()
+        self._client = RpcClient(shm)
+
+    async def send(self, pkt):
+        ns = types.SimpleNamespace()
+        ns.fut = asyncio.Future(loop=self._loop)
+
+        def callback(pkt_view):
+            pkt = Packet(pkt_view)
+            def onloop():
+                ns.fut.set_result(pkt)
+            self._loop.call_soon_threadsafe(onloop)
+
+        self._client.send(pkt, callback)
+
+        return await ns.fut
