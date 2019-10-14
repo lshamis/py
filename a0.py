@@ -47,7 +47,7 @@ async def aio_sub_one(shm, init_, loop=None):
         return pkt
 
 
-class aio_rpc_client:
+class AioRpcClient:
     def __init__(self, shm, loop=None):
         self._loop = loop or asyncio.get_event_loop()
         self._client = RpcClient(shm)
