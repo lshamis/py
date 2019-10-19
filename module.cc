@@ -128,14 +128,12 @@ PYBIND11_MODULE(alephzero_bindings, m) {
 
   m.def("read_config", &a0::read_config, py::arg("flags") = 0);
 
-  py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>> pyrpcserver(m, "RpcServer");
-
   py::class_<a0::RpcRequest>(m, "RpcRequest")
       .def_property_readonly("pkt", &a0::RpcRequest::pkt)
       .def("reply", py::overload_cast<const a0::Packet&>(&a0::RpcRequest::reply))
       .def("reply", py::overload_cast<std::string_view>(&a0::RpcRequest::reply));
 
-  pyrpcserver
+  py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>>(m, "RpcServer")
       .def(py::init<a0::Shm,
                     std::function<void(a0::RpcRequest)>,
                     std::function<void(std::string)>>())
@@ -155,4 +153,30 @@ PYBIND11_MODULE(alephzero_bindings, m) {
            py::overload_cast<std::string_view, std::function<void(a0::PacketView)>>(
                &a0::RpcClient::send))
       .def("cancel", &a0::RpcClient::cancel);
+
+  py::class_<a0::PrpcConnection>(m, "PrpcConnection")
+      .def_property_readonly("pkt", &a0::PrpcConnection::pkt)
+      .def("send", py::overload_cast<const a0::Packet&, bool>(&a0::PrpcConnection::send))
+      .def("send", py::overload_cast<std::string_view, bool>(&a0::PrpcConnection::send));
+
+  py::class_<a0::PrpcServer, nogil_holder<a0::PrpcServer>>(m, "PrpcServer")
+      .def(py::init<a0::Shm,
+                    std::function<void(a0::PrpcConnection)>,
+                    std::function<void(std::string)>>())
+      .def(py::init<const std::string&,
+                    std::function<void(a0::PrpcConnection)>,
+                    std::function<void(std::string)>>())
+      .def("async_close", &a0::PrpcServer::async_close);
+
+  py::class_<a0::PrpcClient, nogil_holder<a0::PrpcClient>>(m, "PrpcClient")
+      .def(py::init<a0::Shm>())
+      .def(py::init<const std::string&>())
+      .def("async_close", &a0::PrpcClient::async_close)
+      .def("connect",
+           py::overload_cast<const a0::Packet&, std::function<void(a0::PacketView, bool)>>(
+               &a0::PrpcClient::connect))
+      .def("connect",
+           py::overload_cast<std::string_view, std::function<void(a0::PacketView, bool)>>(
+               &a0::PrpcClient::connect))
+      .def("cancel", &a0::PrpcClient::cancel);
 }
