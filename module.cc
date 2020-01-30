@@ -30,6 +30,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
   pyshmobj
       .def(py::init<const std::string&>())
       .def(py::init<const std::string&, const a0::Shm::Options&>())
+      .def_property_readonly("path", &a0::Shm::path)
       .def_static("unlink", &a0::Shm::unlink);
 
   py::class_<a0::PacketView>(m, "PacketView")
