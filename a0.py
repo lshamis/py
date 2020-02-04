@@ -30,6 +30,7 @@ class aio_sub:
     def __del__(self):
         with self._ns.cv:
             self._ns.closing = True
+            self._ns.cv.notify()
         del self._sub  # Block until callback completes.
 
     def __aiter__(self):
