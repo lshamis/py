@@ -36,7 +36,9 @@ PYBIND11_MODULE(alephzero_bindings, m) {
   py::class_<a0::PacketView>(m, "PacketView")
       .def_property_readonly("id", &a0::PacketView::id)
       .def_property_readonly("headers", &a0::PacketView::headers)
-      .def_property_readonly("payload", &a0::PacketView::payload);
+      .def_property_readonly("payload", [](a0::PacketView* self) {
+        return py::bytes(self->payload().data(), self->payload().size());
+      });
 
   py::class_<a0::Packet>(m, "Packet")
       .def(py::init<>())
@@ -45,14 +47,25 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def(py::init<const a0::PacketView&>())
       .def_property_readonly("id", &a0::Packet::id)
       .def_property_readonly("headers", &a0::Packet::headers)
-      .def_property_readonly("payload", &a0::Packet::payload);
+      .def_property_readonly("payload", [](a0::PacketView* self) {
+        return py::bytes(self->payload().data(), self->payload().size());
+      });
 
   py::class_<a0::TopicAliasTarget>(m, "TopicAliasTarget")
+      .def(py::init<std::string, std::string>(),
+           py::arg("container"), py::arg("topic"))
       .def_readwrite("container", &a0::TopicAliasTarget::container)
       .def_readwrite("topic", &a0::TopicAliasTarget::topic);
 
   py::class_<a0::TopicManager>(m, "TopicManager")
-      .def(py::init<>())
+      .def(py::init<std::string,
+                    std::map<std::string, a0::TopicAliasTarget>,
+                    std::map<std::string, a0::TopicAliasTarget>,
+                    std::map<std::string, a0::TopicAliasTarget>>(),
+           py::arg("container") = "",
+           py::arg("subscriber_aliases") = std::map<std::string, a0::TopicAliasTarget>{},
+           py::arg("rpc_client_aliases") = std::map<std::string, a0::TopicAliasTarget>{},
+           py::arg("prpc_client_aliases") = std::map<std::string, a0::TopicAliasTarget>{})
       .def_readwrite("container", &a0::TopicManager::container)
       .def_readwrite("subscriber_aliases", &a0::TopicManager::subscriber_aliases)
       .def_readwrite("rpc_client_aliases", &a0::TopicManager::rpc_client_aliases)
@@ -68,7 +81,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("rpc_server_topic", &a0::TopicManager::rpc_server_topic)
       .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
 
-  m.def("InitGlobalTopicManager", py::overload_cast<a0::TopicManager>(&a0::InitGlobalTopicManager));
+  m.def("InitGlobalTopicManager", &a0::InitGlobalTopicManager);
 
   py::class_<a0::Publisher>(m, "Publisher")
       .def(py::init<a0::Shm>())

@@ -5,7 +5,7 @@ module = Extension('alephzero_bindings',
                    library_dirs = ['/usr/lib'],
                    libraries = ['alephzero'],
                    sources = ['module.cc'],
-                   extra_compile_args = ['-std=c++17', '-D_GLIBCXX_USE_CXX11_ABI=0'])
+                   extra_compile_args = ['-std=c++17'])
 
 setup(name = 'alephzero',
       version = '0.1',
