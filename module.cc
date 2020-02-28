@@ -47,7 +47,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def(py::init<const a0::PacketView&>())
       .def_property_readonly("id", &a0::Packet::id)
       .def_property_readonly("headers", &a0::Packet::headers)
-      .def_property_readonly("payload", [](a0::PacketView* self) {
+      .def_property_readonly("payload", [](a0::Packet* self) {
         return py::bytes(self->payload().data(), self->payload().size());
       });
 
