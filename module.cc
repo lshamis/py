@@ -2,6 +2,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
@@ -52,20 +53,43 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       });
 
   py::class_<a0::TopicAliasTarget>(m, "TopicAliasTarget")
-      .def(py::init<std::string, std::string>(),
-           py::arg("container"), py::arg("topic"))
+      .def(py::init<std::string, std::string>(), py::arg("container"), py::arg("topic"))
+      .def(py::init([](py::dict d) {
+        return a0::TopicAliasTarget{d["container"].cast<std::string>(),
+                                    d["topic"].cast<std::string>()};
+      }))
       .def_readwrite("container", &a0::TopicAliasTarget::container)
       .def_readwrite("topic", &a0::TopicAliasTarget::topic);
 
+  py::implicitly_convertible<py::dict, a0::TopicAliasTarget>();
+
+  using TopicAliasMap = std::map<std::string, a0::TopicAliasTarget>;
+  py::bind_map<TopicAliasMap>(m, "TopicAliasMap");
+
   py::class_<a0::TopicManager>(m, "TopicManager")
-      .def(py::init<std::string,
-                    std::map<std::string, a0::TopicAliasTarget>,
-                    std::map<std::string, a0::TopicAliasTarget>,
-                    std::map<std::string, a0::TopicAliasTarget>>(),
+      .def(py::init<std::string, TopicAliasMap, TopicAliasMap, TopicAliasMap>(),
            py::arg("container") = "",
-           py::arg("subscriber_aliases") = std::map<std::string, a0::TopicAliasTarget>{},
-           py::arg("rpc_client_aliases") = std::map<std::string, a0::TopicAliasTarget>{},
-           py::arg("prpc_client_aliases") = std::map<std::string, a0::TopicAliasTarget>{})
+           py::arg("subscriber_aliases") = TopicAliasMap{},
+           py::arg("rpc_client_aliases") = TopicAliasMap{},
+           py::arg("prpc_client_aliases") = TopicAliasMap{})
+      .def(py::init([](py::dict d) {
+        TopicAliasMap subscriber_aliases;
+        TopicAliasMap rpc_client_aliases;
+        TopicAliasMap prpc_client_aliases;
+        if (d.contains("subscriber_aliases")) {
+          subscriber_aliases = d["subscriber_aliases"].cast<TopicAliasMap>();
+        }
+        if (d.contains("rpc_client_aliases")) {
+          rpc_client_aliases = d["rpc_client_aliases"].cast<TopicAliasMap>();
+        }
+        if (d.contains("prpc_client_aliases")) {
+          prpc_client_aliases = d["prpc_client_aliases"].cast<TopicAliasMap>();
+        }
+        return a0::TopicManager{d["container"].cast<std::string>(),
+                                subscriber_aliases,
+                                rpc_client_aliases,
+                                prpc_client_aliases};
+      }))
       .def_readwrite("container", &a0::TopicManager::container)
       .def_readwrite("subscriber_aliases", &a0::TopicManager::subscriber_aliases)
       .def_readwrite("rpc_client_aliases", &a0::TopicManager::rpc_client_aliases)
@@ -80,6 +104,8 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("subscriber_topic", &a0::TopicManager::subscriber_topic)
       .def("rpc_server_topic", &a0::TopicManager::rpc_server_topic)
       .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
+
+  py::implicitly_convertible<py::dict, a0::TopicManager>();
 
   m.def("InitGlobalTopicManager", &a0::InitGlobalTopicManager);
 
