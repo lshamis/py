@@ -108,6 +108,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
   py::implicitly_convertible<py::dict, a0::TopicManager>();
 
   m.def("InitGlobalTopicManager", &a0::InitGlobalTopicManager);
+  m.def("GlobalTopicManager", &a0::GlobalTopicManager);
 
   py::class_<a0::Publisher>(m, "Publisher")
       .def(py::init<a0::Shm>())
