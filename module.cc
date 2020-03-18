@@ -103,7 +103,9 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("publisher_topic", &a0::TopicManager::publisher_topic)
       .def("subscriber_topic", &a0::TopicManager::subscriber_topic)
       .def("rpc_server_topic", &a0::TopicManager::rpc_server_topic)
-      .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic);
+      .def("rpc_client_topic", &a0::TopicManager::rpc_client_topic)
+      .def("prpc_server_topic", &a0::TopicManager::prpc_server_topic)
+      .def("prpc_client_topic", &a0::TopicManager::prpc_client_topic);
 
   py::implicitly_convertible<py::dict, a0::TopicManager>();
 
