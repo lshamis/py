@@ -35,6 +35,7 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_static("unlink", &a0::Shm::unlink);
 
   py::class_<a0::PacketView>(m, "PacketView")
+      .def(py::init<const a0::Packet&>())
       .def_property_readonly("id", &a0::PacketView::id)
       .def_property_readonly("headers", &a0::PacketView::headers)
       .def_property_readonly("payload", [](a0::PacketView* self) {
@@ -51,6 +52,8 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_property_readonly("payload", [](a0::Packet* self) {
         return py::bytes(self->payload().data(), self->payload().size());
       });
+
+  py::implicitly_convertible<a0::Packet, a0::PacketView>();
 
   py::class_<a0::TopicAliasTarget>(m, "TopicAliasTarget")
       .def(py::init<std::string, std::string>(), py::arg("container"), py::arg("topic"))
