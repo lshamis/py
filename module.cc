@@ -19,6 +19,15 @@ using nogil_holder = std::unique_ptr<T, NoGilDeleter<T>>;
 
 PYBIND11_MODULE(alephzero_bindings, m) {
   py::class_<a0::Shm> pyshm(m, "Shm");
+  py::class_<a0::Disk> pydisk(m, "Disk");
+
+  py::class_<a0::Arena>(m, "Arena")
+      .def(py::init<a0::Shm>())
+      .def(py::init<a0::Disk>())
+      .def_property_readonly("size", &a0::Arena::size);
+
+  py::implicitly_convertible<a0::Shm, a0::Arena>();
+  py::implicitly_convertible<a0::Disk, a0::Arena>();
 
   py::class_<a0::Shm::Options>(pyshm, "Options")
       .def(py::init<>())
@@ -30,10 +39,27 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_readonly_static("DEFAULT", &a0::Shm::Options::DEFAULT);
 
   pyshm
-      .def(py::init<const std::string_view>())
-      .def(py::init<const std::string_view, const a0::Shm::Options&>())
+      .def(py::init<std::string_view>())
+      .def(py::init<std::string_view, const a0::Shm::Options&>())
+      .def_property_readonly("size", &a0::Shm::size)
       .def_property_readonly("path", &a0::Shm::path)
       .def_static("unlink", &a0::Shm::unlink);
+
+  py::class_<a0::Disk::Options>(pydisk, "Options")
+      .def(py::init<>())
+      .def(py::init([](off_t size) {
+             return a0::Disk::Options{size};
+           }),
+           py::arg("size"))
+      .def_readwrite("size", &a0::Disk::Options::size)
+      .def_readonly_static("DEFAULT", &a0::Disk::Options::DEFAULT);
+
+  pydisk
+      .def(py::init<std::string_view>())
+      .def(py::init<std::string_view, const a0::Disk::Options&>())
+      .def_property_readonly("size", &a0::Disk::size)
+      .def_property_readonly("path", &a0::Disk::path)
+      .def_static("unlink", &a0::Disk::unlink);
 
   py::class_<a0::PacketView>(m, "PacketView")
       .def(py::init<const a0::Packet&>())
@@ -118,13 +144,13 @@ PYBIND11_MODULE(alephzero_bindings, m) {
   m.def("GlobalTopicManager", &a0::GlobalTopicManager);
 
   py::class_<a0::Publisher>(m, "Publisher")
-      .def(py::init<a0::Shm>())
-      .def(py::init<const std::string_view>())
+      .def(py::init<a0::Arena>())
+      .def(py::init<std::string_view>())
       .def("pub", py::overload_cast<const a0::PacketView&>(&a0::Publisher::pub))
       .def("pub",
            py::overload_cast<std::vector<std::pair<std::string, std::string>>,
-                             const std::string_view>(&a0::Publisher::pub))
-      .def("pub", py::overload_cast<const std::string_view>(&a0::Publisher::pub));
+                             std::string_view>(&a0::Publisher::pub))
+      .def("pub", py::overload_cast<std::string_view>(&a0::Publisher::pub));
 
   py::enum_<a0_subscriber_init_t>(m, "SubscriberInit")
       .value("INIT_OLDEST", A0_INIT_OLDEST)
@@ -138,29 +164,29 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .export_values();
 
   py::class_<a0::SubscriberSync>(m, "SubscriberSync")
-      .def(py::init<a0::Shm, a0_subscriber_init_t, a0_subscriber_iter_t>())
-      .def(py::init<const std::string_view, a0_subscriber_init_t, a0_subscriber_iter_t>())
+      .def(py::init<a0::Arena, a0_subscriber_init_t, a0_subscriber_iter_t>())
+      .def(py::init<std::string_view, a0_subscriber_init_t, a0_subscriber_iter_t>())
       .def("has_next", &a0::SubscriberSync::has_next)
       .def("next", &a0::SubscriberSync::next);
 
   py::class_<a0::Subscriber, nogil_holder<a0::Subscriber>>(m, "Subscriber")
-      .def(py::init<a0::Shm,
+      .def(py::init<a0::Arena,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
                     std::function<void(a0::PacketView)>>())
-      .def(py::init<const std::string_view,
+      .def(py::init<std::string_view,
                     a0_subscriber_init_t,
                     a0_subscriber_iter_t,
                     std::function<void(a0::PacketView)>>())
       .def("async_close", &a0::Subscriber::async_close)
       .def_static("read_one",
-                  py::overload_cast<const a0::Shm&, a0_subscriber_init_t, int>(
+                  py::overload_cast<a0::Arena, a0_subscriber_init_t, int>(
                       &a0::Subscriber::read_one),
                   py::arg("shm"),
                   py::arg("seek"),
                   py::arg("flags") = 0)
       .def_static("read_one",
-                  py::overload_cast<const std::string_view, a0_subscriber_init_t, int>(
+                  py::overload_cast<std::string_view, a0_subscriber_init_t, int>(
                       &a0::Subscriber::read_one),
                   py::arg("topic"),
                   py::arg("seek"),
@@ -173,31 +199,31 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("reply", py::overload_cast<const a0::PacketView&>(&a0::RpcRequest::reply))
       .def("reply",
            py::overload_cast<std::vector<std::pair<std::string, std::string>>,
-                             const std::string_view>(&a0::RpcRequest::reply))
-      .def("reply", py::overload_cast<const std::string_view>(&a0::RpcRequest::reply));
+                             std::string_view>(&a0::RpcRequest::reply))
+      .def("reply", py::overload_cast<std::string_view>(&a0::RpcRequest::reply));
 
   py::class_<a0::RpcServer, nogil_holder<a0::RpcServer>>(m, "RpcServer")
-      .def(py::init<a0::Shm,
+      .def(py::init<a0::Arena,
                     std::function<void(a0::RpcRequest)>,
-                    std::function<void(const std::string_view)>>())
-      .def(py::init<const std::string_view,
+                    std::function<void(std::string_view)>>())
+      .def(py::init<std::string_view,
                     std::function<void(a0::RpcRequest)>,
-                    std::function<void(const std::string_view)>>())
+                    std::function<void(std::string_view)>>())
       .def("async_close", &a0::RpcServer::async_close);
 
   py::class_<a0::RpcClient, nogil_holder<a0::RpcClient>>(m, "RpcClient")
-      .def(py::init<a0::Shm>())
-      .def(py::init<const std::string_view>())
+      .def(py::init<a0::Arena>())
+      .def(py::init<std::string_view>())
       .def("async_close", &a0::RpcClient::async_close)
       .def("send",
            py::overload_cast<const a0::PacketView&, std::function<void(const a0::PacketView&)>>(
                &a0::RpcClient::send))
       .def("send",
            py::overload_cast<std::vector<std::pair<std::string, std::string>>,
-                             const std::string_view,
+                             std::string_view,
                              std::function<void(const a0::PacketView&)>>(&a0::RpcClient::send))
       .def("send",
-           py::overload_cast<const std::string_view, std::function<void(const a0::PacketView&)>>(
+           py::overload_cast<std::string_view, std::function<void(const a0::PacketView&)>>(
                &a0::RpcClient::send))
       .def("cancel", &a0::RpcClient::cancel);
 
@@ -206,22 +232,22 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def("send", py::overload_cast<const a0::PacketView&, bool>(&a0::PrpcConnection::send))
       .def("send",
            py::overload_cast<std::vector<std::pair<std::string, std::string>>,
-                             const std::string_view,
+                             std::string_view,
                              bool>(&a0::PrpcConnection::send))
-      .def("send", py::overload_cast<const std::string_view, bool>(&a0::PrpcConnection::send));
+      .def("send", py::overload_cast<std::string_view, bool>(&a0::PrpcConnection::send));
 
   py::class_<a0::PrpcServer, nogil_holder<a0::PrpcServer>>(m, "PrpcServer")
-      .def(py::init<a0::Shm,
+      .def(py::init<a0::Arena,
                     std::function<void(a0::PrpcConnection)>,
-                    std::function<void(const std::string_view)>>())
-      .def(py::init<const std::string_view,
+                    std::function<void(std::string_view)>>())
+      .def(py::init<std::string_view,
                     std::function<void(a0::PrpcConnection)>,
-                    std::function<void(const std::string_view)>>())
+                    std::function<void(std::string_view)>>())
       .def("async_close", &a0::PrpcServer::async_close);
 
   py::class_<a0::PrpcClient, nogil_holder<a0::PrpcClient>>(m, "PrpcClient")
-      .def(py::init<a0::Shm>())
-      .def(py::init<const std::string_view>())
+      .def(py::init<a0::Arena>())
+      .def(py::init<std::string_view>())
       .def("async_close", &a0::PrpcClient::async_close)
       .def("connect",
            py::overload_cast<const a0::PacketView&,
@@ -229,11 +255,11 @@ PYBIND11_MODULE(alephzero_bindings, m) {
                &a0::PrpcClient::connect))
       .def("connect",
            py::overload_cast<std::vector<std::pair<std::string, std::string>>,
-                             const std::string_view,
+                             std::string_view,
                              std::function<void(const a0::PacketView&, bool)>>(
                &a0::PrpcClient::connect))
       .def("connect",
-           py::overload_cast<const std::string_view,
+           py::overload_cast<std::string_view,
                              std::function<void(const a0::PacketView&, bool)>>(
                &a0::PrpcClient::connect))
       .def("cancel", &a0::PrpcClient::cancel);
@@ -250,8 +276,8 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_readonly_static("DEFAULT", &a0::Heartbeat::Options::DEFAULT);
 
   pyheartbeat
-      .def(py::init<a0::Shm, a0::Heartbeat::Options>(), py::arg("shm"), py::arg("options"))
-      .def(py::init<a0::Shm>(), py::arg("shm"))
+      .def(py::init<a0::Arena, a0::Heartbeat::Options>(), py::arg("shm"), py::arg("options"))
+      .def(py::init<a0::Arena>(), py::arg("shm"))
       .def(py::init<a0::Heartbeat::Options>(), py::arg("options"))
       .def(py::init());
 
@@ -268,13 +294,13 @@ PYBIND11_MODULE(alephzero_bindings, m) {
       .def_readonly_static("DEFAULT", &a0::HeartbeatListener::Options::DEFAULT);
 
   pyheartbeatlistener
-      .def(py::init<a0::Shm, a0::HeartbeatListener::Options, std::function<void()>, std::function<void()>>(),
+      .def(py::init<a0::Arena, a0::HeartbeatListener::Options, std::function<void()>, std::function<void()>>(),
            py::arg("shm"), py::arg("options"), py::arg("ondetected"), py::arg("onmissed"))
-      .def(py::init<a0::Shm, std::function<void()>, std::function<void()>>(),
+      .def(py::init<a0::Arena, std::function<void()>, std::function<void()>>(),
            py::arg("shm"), py::arg("ondetected"), py::arg("onmissed"))
-      .def(py::init<const std::string_view, a0::HeartbeatListener::Options, std::function<void()>, std::function<void()>>(),
+      .def(py::init<std::string_view, a0::HeartbeatListener::Options, std::function<void()>, std::function<void()>>(),
            py::arg("container"), py::arg("options"), py::arg("ondetected"), py::arg("onmissed"))
-      .def(py::init<const std::string_view, std::function<void()>, std::function<void()>>(),
+      .def(py::init<std::string_view, std::function<void()>, std::function<void()>>(),
            py::arg("container"), py::arg("ondetected"), py::arg("onmissed"))
       .def(py::init<a0::HeartbeatListener::Options, std::function<void()>, std::function<void()>>(),
            py::arg("options"), py::arg("ondetected"), py::arg("onmissed"))
