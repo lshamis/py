@@ -1,5 +1,5 @@
 # Aleph Zero: Python
-[![Build Status](https://travis-ci.com/alephzero/py.svg?branch=master)](https://travis-ci.com/alephzero/py)
+[![CI](https://github.com/alephzero/py/workflows/CI/badge.svg)](https://github.com/alephzero/py/actions?query=workflow%3ACI)
 
 TODO: What is it? Why is it? Who is it????
 
