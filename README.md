@@ -8,5 +8,5 @@ See https://github.com/alephzero/playground for examples.
 ## Install Instructions
 
 ```sh
-pip install git+https://github.com/alephzero/py.git
+pip install alephzero
 ```
