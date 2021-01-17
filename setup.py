@@ -4,7 +4,9 @@ from pybind11.setup_helpers import Pybind11Extension
 
 sources = ['module.cc']
 headers = []
-for directory in ['./alephzero/include', './alephzero/include/a0', './alephzero/src']:
+for directory in [
+        './alephzero/include', './alephzero/include/a0', './alephzero/src'
+]:
     for extension in ['c', 'cpp']:
         sources += glob.glob(f'{directory}/*.{extension}')
     for extension in ['h', 'hpp']:
